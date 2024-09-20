@@ -820,12 +820,19 @@ def hdl_wid_90(_: WIDParams):
     return bool(stack.mesh.is_provisioned.data)
 
 
-def hdl_wid_94(_: WIDParams):
+def hdl_wid_94(params: WIDParams):
     """
     Implements: IUT_SEND_SECURE_NETWORK_BEACON_WITH_FLAGS
     description: Please order IUT to send a secure network beacon with Key
                  Refresh Flag set to %d and IV Update Flag set to %d
     """
+
+    cases = ['MESH/NODE/IVU/BI-01','MESH/NODE/IVU/BI-07']
+    for case in cases:
+        if case in params.test_case_name:
+            logging.info(f">>>>>>>>>>>>>> turn off test mode {case}")
+            btp.mesh_iv_update_test_mode(False)
+
     return True
 
 
@@ -1049,7 +1056,7 @@ def hdl_wid_220(_: WIDParams):
     return True
 
 
-def hdl_wid_221(_: WIDParams):
+def hdl_wid_221(param: WIDParams):
     """
     Implements: IUT_READY_FOR_UPDATE_IN_PROGRESS_SECURE_NETWORK_BEACON
     description: The Lower Tester will advertise a new Secure Network beacon
@@ -1058,8 +1065,16 @@ def hdl_wid_221(_: WIDParams):
     """
     stack = get_stack()
 
+    auto_disable = False
+
+    test_cases = ['MESH/NODE/IVU/BI-01', 'MESH/NODE/IVU/BI-07']
+    for case in test_cases:
+        if case in param.test_case_name:
+            auto_disable = True
+            break
+
     if not stack.mesh.is_iv_test_mode_enabled.data:
-        btp.mesh_iv_update_test_mode(True)
+        btp.mesh_iv_update_test_mode(True, auto_disable)
     return True
 
 

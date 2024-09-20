@@ -490,7 +490,7 @@ def mesh_input_string(string):
     iutctl.btp_socket.send_wait_rsp(*MESH['input_str'], data=data)
 
 
-def mesh_iv_update_test_mode(enable):
+def mesh_iv_update_test_mode(enable, auto_disable = False):
     logging.debug("%s", mesh_iv_update_test_mode.__name__)
 
     iutctl = get_iut()
@@ -499,6 +499,11 @@ def mesh_iv_update_test_mode(enable):
         data = bytearray(struct.pack("<B", 0x01))
     else:
         data = bytearray(struct.pack("<B", 0x00))
+
+    if auto_disable:
+        data.extend(bytearray(struct.pack("<B", 0x01)))
+    else:
+        data.extend(bytearray(struct.pack("<B", 0x00)))
 
     iutctl.btp_socket.send_wait_rsp(*MESH['iv_update_test_mode'], data=data)
 
@@ -2067,6 +2072,23 @@ def mesh_blob_lost_target_ev(mesh, data, data_len):
 
     stack.mesh.blob_lost_target = True
 
+def mesh_snb_received_ev(mesh, data, data_len):
+    logging.debug("%s %r %r", mesh_snb_received_ev.__name__, data, data_len)
+
+    hdr_fmt = '<BH'
+
+    (flags, iv_idx) = struct.unpack_from(hdr_fmt, data, 0)
+    logging.info(f'Flags: {flags}, iv_idx: {iv_idx}')
+
+def mesh_prb_received_ev(mesh, data, data_len):
+    logging.debug("%s %r %r", mesh_prb_received_ev.__name__, data, data_len)
+
+    hdr_fmt = '<BH'
+
+    (flags, iv_idx) = struct.unpack_from(hdr_fmt, data, 0)
+    logging.info(f'Flags: {flags}, iv_idx: {iv_idx}')
+    
+
 MESH_EV = {
     defs.MESH_EV_OUT_NUMBER_ACTION: mesh_out_number_action_ev,
     defs.MESH_EV_OUT_STRING_ACTION: mesh_out_string_action_ev,
@@ -2085,4 +2107,6 @@ MESH_EV = {
     defs.MESH_EV_PROV_NODE_ADDED: mesh_prov_node_added_ev,
     defs.MESH_EV_MODEL_RECV: mesh_model_recv_ev,
     defs.MESH_EV_BLOB_LOST_TARGET: mesh_blob_lost_target_ev,
+    defs.MESH_EV_SNB: mesh_snb_received_ev,
+    defs.MESH_EV_PRB: mesh_prb_received_ev,
 }
