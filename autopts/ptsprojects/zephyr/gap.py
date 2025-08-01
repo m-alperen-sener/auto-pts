@@ -102,7 +102,7 @@ def set_pixits(ptses):
     pts.set_pixit("GAP", "TSPX_mtu_size", "23")
     pts.set_pixit("GAP", "TSPX_delete_ltk", "FALSE")
     pts.set_pixit("GAP", "TSPX_pin_code", "0000")
-    pts.set_pixit("GAP", "TSPX_time_guard", "300000")
+    pts.set_pixit("GAP", "TSPX_time_guard", "120000")
     pts.set_pixit("GAP", "TSPX_use_implicit_send", "TRUE")
     pts.set_pixit("GAP", "TSPX_use_dynamic_pin", "FALSE")
     pts.set_pixit("GAP", "TSPX_secure_simple_pairing_pass_key_confirmation",
