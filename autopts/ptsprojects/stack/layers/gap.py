@@ -170,7 +170,19 @@ class Gap:
 
         # if IUT doesn't support it, it should be disabled in preconditions
         self.pair_user_interaction = True
-        self.periodic_report_rxed = False
+
+        # During test multiple periodic advertising events can be received,
+        # and it would be difficult to trigger wait_event_ again and again
+        # until we get the expected event with periodic advertising data.
+        # also test case might be waiting both type of events in different
+        # steps. Therefore we use a different event flags.
+
+        # Periodic Advertising events with periodic advertising data.
+        self.periodic_adv_report_data_rxed = False
+        self.periodic_adv_report_data = None
+        # Periodic Advertising events without periodic advertising data
+        self.periodic_adv_report_rxed = False
+
         self.periodic_sync_established_rxed = False
         self.periodic_transfer_received = False
         self.periodic_biginfo = []
@@ -220,12 +232,32 @@ class Gap:
     def car_received(self):
         return self.peer_car.data['received']
 
+    def periodic_adv_event_received(self, data=None):
+        '''
+        Periodic Advertising event received. With or without periodic advertising data.
+        '''
+        if data is None:
+            self.periodic_adv_report_rxed = True
+        else:
+            self.periodic_adv_report_data = data
+            self.periodic_adv_report_data_rxed = True
+
     def wait_periodic_report(self, timeout):
-        if self.periodic_report_rxed:
+        if self.periodic_adv_report_rxed:
             return True
 
-        if wait_for_event(timeout, lambda: self.periodic_report_rxed):
-            self.periodic_report_rxed = False
+        if wait_for_event(timeout, lambda: self.periodic_adv_report_rxed):
+            self.periodic_adv_report_rxed = False
+            return True
+
+        return False
+
+    def wait_periodic_adv_report_with_data(self, timeout):
+        if self.periodic_adv_report_data_rxed:
+            return True
+
+        if wait_for_event(timeout, lambda: self.periodic_adv_report_data_rxed):
+            self.periodic_adv_report_data_rxed = False
             return True
 
         return False

@@ -363,7 +363,20 @@ def gap_padv_sync_lost_ev_(gap, data, data_len):
 def gap_padv_report_ev_(gap, data, data_len):
     logging.debug("%s", gap_padv_report_ev_.__name__)
     stack = get_stack()
-    stack.gap.periodic_report_rxed = True
+
+    fmt = '<HBBBBB'
+    if len(data) != struct.calcsize(fmt):
+        raise BTPError("Invalid data length")
+
+    # Extract the data length from the header
+    _, _, _, _, _, length = struct.unpack_from(fmt, data[:struct.calcsize(fmt)])
+
+    padv_data = data[7:]
+
+    if length > 0 and len(padv_data) == length:
+        stack.gap.periodic_adv_event_received(padv_data)
+    else:
+        stack.gap.periodic_adv_event_received()
 
 
 def gap_padv_transfer_received_ev_(gap, data, data_len):
